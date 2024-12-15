@@ -87,8 +87,9 @@ def animate_quantum_walk(qw, cw, steps, grid_size, interval=500, stop_at_complet
     fig = plt.figure(figsize=(12, 9))
     gs = fig.add_gridspec(5, 40, height_ratios=[0.3, 2, 0.8, 1, 0.2], hspace=0.4)
     
-    # Quantum walk plot and colorbar
-    ax_quantum = fig.add_subplot(gs[1, :18])
+    # Quantum walk plots and colorbar (superposition and measurement)
+    ax_quantum_super = fig.add_subplot(gs[1, :8])  # Superposition
+    ax_quantum_meas = fig.add_subplot(gs[1, 9:17])  # Measurement
     cax_quantum = fig.add_subplot(gs[1, 18])
     
     # Classical walk plot and colorbar
@@ -111,13 +112,14 @@ def animate_quantum_walk(qw, cw, steps, grid_size, interval=500, stop_at_complet
                             bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=5),
                             linespacing=1.2, wrap=True, transform=fig.transFigure)
     
-    # Buttons area
-    btn_prev_ax = plt.axes([0.35, 0.03, 0.08, 0.04])
-    btn_play_ax = plt.axes([0.45, 0.03, 0.08, 0.04])
-    btn_next_ax = plt.axes([0.55, 0.03, 0.08, 0.04])
-    btn_reset_ax = plt.axes([0.65, 0.03, 0.08, 0.04])
+    # Create button axes in the bottom row of the gridspec
+    btn_prev_ax = fig.add_subplot(gs[4, 14:17])
+    btn_play_ax = fig.add_subplot(gs[4, 18:21])
+    btn_next_ax = fig.add_subplot(gs[4, 22:25])
+    btn_reset_ax = fig.add_subplot(gs[4, 26:29])
     
-    _setup_plot(ax_quantum, grid_size)
+    _setup_plot(ax_quantum_super, grid_size)
+    _setup_plot(ax_quantum_meas, grid_size)
     _setup_plot(ax_classical, grid_size)
     
     # Create custom colormap
@@ -174,16 +176,33 @@ Sans superposition ni interférence, elle doit explorer l'espace séquentielleme
 Cette exploration linéaire est fondamentalement plus lente que la marche quantique.
 Couverture: {:.1f}%"""
     
+    def _plot_quantum_measurement(ax, probabilities, max_prob, cmap):
+        """Plot a single random measurement outcome based on probabilities."""
+        positions = list(probabilities.keys())
+        probs = list(probabilities.values())
+        if positions:
+            # Sample one position based on probabilities
+            measured_pos = np.random.choice(range(len(positions)), p=np.array(probs)/sum(probs))
+            measured_state = {positions[measured_pos]: 1.0}  # 100% probability at measured position
+            _plot_probabilities(ax, measured_state, 1.0, cmap)
+            ax.set_title('Mesure', fontsize=8, pad=5)
+
     def update_plot(frame):
-        ax_quantum.clear()
+        ax_quantum_super.clear()
+        ax_quantum_meas.clear()
         ax_classical.clear()
         ax_coverage.clear()
         
-        _setup_plot(ax_quantum, grid_size)
+        _setup_plot(ax_quantum_super, grid_size)
+        _setup_plot(ax_quantum_meas, grid_size)
         _setup_plot(ax_classical, grid_size)
         
-        # Plot distributions
-        _plot_probabilities(ax_quantum, quantum_distributions[frame], max_prob, cmap)
+        # Plot quantum distributions (superposition and measurement)
+        _plot_probabilities(ax_quantum_super, quantum_distributions[frame], max_prob, cmap)
+        _plot_quantum_measurement(ax_quantum_meas, quantum_distributions[frame], max_prob, cmap)
+        ax_quantum_super.set_title('Superposition', fontsize=8, pad=5)
+        
+        # Plot classical distribution
         _plot_probabilities(ax_classical, classical_distributions[frame], max_prob, cmap)
         
         # Check if full coverage is achieved
@@ -191,10 +210,10 @@ Couverture: {:.1f}%"""
         classical_full = classical_coverage[frame] >= 99.9
         
         # Update titles with coverage and full exploration indicator
-        quantum_title = f'Marche Quantique - Étape {frame}/{steps}\n{quantum_coverage[frame]:.1f}%'
+        quantum_super_title = f'Marche Quantique - Étape {frame}/{steps}\n{quantum_coverage[frame]:.1f}%'
         if quantum_full:
-            quantum_title += '\n✓ Exploration Complète!'
-        ax_quantum.set_title(quantum_title, fontsize=9, fontweight='bold', pad=5)
+            quantum_super_title += '\n✓ Exploration Complète!'
+        ax_quantum_super.set_title(quantum_super_title, fontsize=9, fontweight='bold', pad=5)
         
         classical_title = f'Marche Classique - Étape {frame}/{steps}\n{classical_coverage[frame]:.1f}%'
         if classical_full:
@@ -269,14 +288,14 @@ Couverture: {:.1f}%"""
         # Add grid to coverage graph
         ax_coverage.grid(True, linestyle='--', alpha=0.3)
         
-        return ax_quantum, ax_classical, ax_coverage
+        return ax_quantum_super, ax_quantum_meas, ax_classical, ax_coverage
     
     frame_number = [0]
     animation_running = [True]
     
     def update(frame):
         update_plot(frame)
-        return ax_quantum, ax_classical
+        return ax_quantum_super, ax_quantum_meas, ax_classical
     
     ani = animation.FuncAnimation(
         fig, update, frames=len(quantum_distributions),
