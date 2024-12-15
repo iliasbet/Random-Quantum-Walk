@@ -85,7 +85,7 @@ def animate_quantum_walk(qw, cw, steps, grid_size, interval=500, stop_at_complet
     """Animate both quantum and classical walks side by side."""
     # Create figure with space for both plots, explanation, and coverage graph
     fig = plt.figure(figsize=(12, 9))
-    gs = fig.add_gridspec(4, 40, height_ratios=[2, 0.3, 1, 0.2], hspace=0.4)
+    gs = fig.add_gridspec(4, 40, height_ratios=[2, 0.8, 1, 0.2], hspace=0.4)
     
     # Quantum walk plot and colorbar
     ax_quantum = fig.add_subplot(gs[0, :18])
@@ -102,6 +102,14 @@ def animate_quantum_walk(qw, cw, steps, grid_size, interval=500, stop_at_complet
     ax_coverage.set_title('Comparaison de la Vitesse d\'Exploration', fontsize=9)
     ax_coverage.grid(True, alpha=0.3)
     ax_coverage.tick_params(labelsize=7)
+    
+    # Add text explanations directly to the figure
+    quantum_text = fig.text(0.25, 0.45, "", fontsize=8, fontfamily='DejaVu Sans', ha='center', va='center', 
+                          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=5),
+                          linespacing=1.2, wrap=True, transform=fig.transFigure)
+    classical_text = fig.text(0.75, 0.45, "", fontsize=8, fontfamily='DejaVu Sans', ha='center', va='center',
+                            bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=5),
+                            linespacing=1.2, wrap=True, transform=fig.transFigure)
     
     # Buttons area
     btn_prev_ax = plt.axes([0.35, 0.03, 0.08, 0.04])
@@ -155,14 +163,16 @@ def animate_quantum_walk(qw, cw, steps, grid_size, interval=500, stop_at_complet
     
     # Explanations
     quantum_explanation = """Marche Quantique:
-• Superposition quantique
-• Interférences
-• Couverture: {:.1f}%"""
+La particule quantique explore l'espace en empruntant simultanément tous les chemins possibles.
+Ces chemins interfèrent entre eux, créant des motifs d'interférence constructive et destructive.
+Cette superposition cohérente permet une exploration quadratiquement plus rapide qu'une marche classique.
+Couverture: {:.1f}%"""
 
     classical_explanation = """Marche Classique:
-• Marche aléatoire
-• Pas d'interférences
-• Couverture: {:.1f}%"""
+La particule classique suit un unique chemin aléatoire à chaque étape.
+Sans superposition ni interférence, elle doit explorer l'espace séquentiellement.
+Cette exploration linéaire est fondamentalement plus lente que la marche quantique.
+Couverture: {:.1f}%"""
     
     def update_plot(frame):
         ax_quantum.clear()
@@ -192,10 +202,11 @@ def animate_quantum_walk(qw, cw, steps, grid_size, interval=500, stop_at_complet
         ax_classical.set_title(classical_title, fontsize=9, fontweight='bold', pad=5)
         
         # Update explanations with coverage
-        fig.text(0.05, 0.7, quantum_explanation.format(quantum_coverage[frame]),
-                 fontsize=8, fontfamily='DejaVu Sans', linespacing=1.5)
-        fig.text(0.55, 0.7, classical_explanation.format(classical_coverage[frame]),
-                 fontsize=8, fontfamily='DejaVu Sans', linespacing=1.5)
+        quantum_explanation_text = quantum_explanation.format(quantum_coverage[frame])
+        classical_explanation_text = classical_explanation.format(classical_coverage[frame])
+        
+        quantum_text.set_text(quantum_explanation_text)
+        classical_text.set_text(classical_explanation_text)
         
         # Update coverage graph
         ax_coverage.set_xlabel('Étapes', fontsize=8)
