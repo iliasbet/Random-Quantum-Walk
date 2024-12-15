@@ -85,18 +85,18 @@ def animate_quantum_walk(qw, cw, steps, grid_size, interval=500, stop_at_complet
     """Animate both quantum and classical walks side by side."""
     # Create figure with space for both plots, explanation, and coverage graph
     fig = plt.figure(figsize=(12, 9))
-    gs = fig.add_gridspec(4, 40, height_ratios=[2, 0.8, 1, 0.2], hspace=0.4)
+    gs = fig.add_gridspec(5, 40, height_ratios=[0.3, 2, 0.8, 1, 0.2], hspace=0.4)
     
     # Quantum walk plot and colorbar
-    ax_quantum = fig.add_subplot(gs[0, :18])
-    cax_quantum = fig.add_subplot(gs[0, 18])
+    ax_quantum = fig.add_subplot(gs[1, :18])
+    cax_quantum = fig.add_subplot(gs[1, 18])
     
     # Classical walk plot and colorbar
-    ax_classical = fig.add_subplot(gs[0, 21:39])
-    cax_classical = fig.add_subplot(gs[0, 39])
+    ax_classical = fig.add_subplot(gs[1, 21:39])
+    cax_classical = fig.add_subplot(gs[1, 39])
     
     # Coverage comparison graph
-    ax_coverage = fig.add_subplot(gs[2, 2:38])
+    ax_coverage = fig.add_subplot(gs[3, 2:38])
     ax_coverage.set_xlabel('Étapes', fontsize=8)
     ax_coverage.set_ylabel('Couverture (%)', fontsize=8)
     ax_coverage.set_title('Comparaison de la Vitesse d\'Exploration', fontsize=9)
